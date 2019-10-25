@@ -15,6 +15,7 @@ class ScheduleComponent extends AllDataComponent {
         console.log("执行任务：" + new Date());
         // console.log(this)
         this.getUsers()
+        // this.getCheckindata()
         // });
     }
 }
