@@ -55,10 +55,10 @@ export default class AllDataComponent extends BaseComponent {
 
         if (resObj.errcode === 0) {
             checkAllData.checkUser(resObj.userlist)
+                .then(this.getCheckindata())
         } else {
-            throw new Error('user获取失败')
+            throw new Error(resObj.errmsg)
         }
-        // console.log(resObj)
     }
 
 
@@ -67,15 +67,15 @@ export default class AllDataComponent extends BaseComponent {
         const allUsers = await UserModel.find({}, '-_id -__v')
 
         const useridlist = []
-
         allUsers.forEach(item => {
             useridlist.push(item.userid)
         });
 
-        console.log(moment().startOf('day').unix())
+        console.log(moment().startOf('day').format('YYYY-MM-DD'))
         const starttime = moment().startOf('day').unix()
         const endtime = moment().endOf('day').unix()
-        // console.log(useridlist)
+        const checkin_date = moment().format('YYYY-MM-DD')
+
         const resObj = await this.fetch(this.wx_localhost + 'checkin/getcheckindata?access_token=' + accessToken, {
             opencheckindatatype: 3,
             starttime,
@@ -84,10 +84,9 @@ export default class AllDataComponent extends BaseComponent {
         }, 'post')
 
         if (resObj.errcode === 0) {
-            checkAllData.checkCheckin(resObj.checkindata)
+            checkAllData.checkCheckin(resObj.checkindata, checkin_date)
         } else {
-            throw new Error('checkin获取失败')
+            throw new Error(resObj.errmsg)
         }
-        // console.log(resObj)
     }
 }

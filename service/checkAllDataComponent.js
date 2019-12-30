@@ -11,7 +11,8 @@ export default class CheckAllDataComponent extends BaseComponent {
 
     async checkDepartment(data) {
         const departmentsData = await DepartmentModel.find({})
-        if (departmentsData.length <= 0) return
+
+        if (departmentsData.length > 0) return
         // departmentData.forEach((item, idx) => {
         //     const result = data.some((item2, idx2) => {
         //         if (item.id === item2.id) return true
@@ -31,41 +32,50 @@ export default class CheckAllDataComponent extends BaseComponent {
     }
 
     async checkUser(data) {
-        const usersData = await DepartmentModel.find({})
-        if (usersData.length <= 0) return
+        const delUserConditions = {}
+        const usersData = await UserModel.find({})
+        if (usersData.length > 0) return
+        UserModel.deleteMany(delUserConditions, err => {
+            if (err) {
+                throw new Error(err)
+                return
+            } else {
+                data.forEach((item, idx) => {
+                    const newUserOne = new UserModel(item)
+                    newUserOne.save()
+                })
+            }
+        })
 
-        data.forEach((item, idx) => {
-            const newUserOne = new UserModel(item)
-            newUserOne.save()
+    }
+
+    async checkCheckin(data, checkin_date) {
+        const exception_type = ['时间异常', '地点异常', '未打卡', 'wifi异常', '非常用设备']
+        const delConditions = { checkin_date }
+        CheckinModel.deleteMany(delConditions, err => {
+            if (err) {
+                throw new Error(err)
+                return
+            }
+            data.forEach((item, idx) => {
+                let tempData = item.exception_type
+                if (exception_type.includes(tempData)) {
+                    item.today_exception = true
+                }
+                item.checkin_date = moment(item.checkin_time * 1000).format('YYYY-MM-DD')
+                const newCheckinOne = new CheckinModel(item)
+                newCheckinOne.save()
+            })
         })
     }
 
-    async checkCheckin(arr) {
-        // console.log(data)
-        // const allCheckin = await CheckinModel.find({})
-        // console.log(allCheckin.length)
-        // // if (allCheckin.length <= 0) return
-        // console.log(allCheckin)
-        // data.forEach((item, idx) => {
-        //     item.checkin_date = moment(item.checkin_time * 1000).format('YYYY-MM-DD')
-        //     const newCheckinOne = new CheckinModel(item)
-        //     newCheckinOne.save()
-        // })
-    }
-
-
-    isObjEqual(o1, o2) {
-        const props1 = Object.getOwnPropertyNames(o1);
-        const props2 = Object.getOwnPropertyNames(o2);
-        if (props1.length != props2.length) {
-            return false;
-        }
-        for (const i = 0, max = props1.length; i < max; i++) {
-            const propName = props1[i];
-            if (o1[propName] !== o2[propName]) {
-                return false;
+    isException(data) {
+        const exception_type = ['时间异常', '地点异常', '未打卡', 'wifi异常', '非常用设备']
+        for (let i = 0; i < data.length; i++) {
+            let item = data[i]
+            if (exception_type.includes(item)) {
+                return false
             }
         }
-        return true;
     }
 }

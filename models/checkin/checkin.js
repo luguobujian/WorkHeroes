@@ -16,7 +16,8 @@ const checkinSchema = new Schema({
     wifimac: String,
     mediaids: [],
     lat: Number,
-    lng: Number
+    lng: Number,
+    today_exception: { type: Boolean, default: false }
 })
 
 checkinSchema.index({ id: 1 })
